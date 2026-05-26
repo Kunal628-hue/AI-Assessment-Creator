@@ -32,6 +32,7 @@ export interface GeneratedQuestion {
   difficulty: string;
   marks: number;
   options?: string[];
+  correctAnswer?: string;
 }
 
 export interface PaperSection {
@@ -112,6 +113,10 @@ interface AssignmentStore {
   // Actions - Sidebar
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+
+  // Actions - Gemini API Key
+  setGeminiApiKey: (key: string) => void;
+  geminiApiKey: string;
 }
 
 const defaultFormData: FormData = {
@@ -139,6 +144,7 @@ export const useAssignmentStore = create<AssignmentStore>((set, get) => ({
   generationStatus: 'idle',
   generationProgress: { progress: 0, message: '' },
   sidebarOpen: false,
+  geminiApiKey: typeof window !== 'undefined' ? localStorage.getItem('vedaai_gemini_key') || '' : '',
 
   // Form actions
   updateFormField: (field, value) => {
@@ -234,4 +240,12 @@ export const useAssignmentStore = create<AssignmentStore>((set, get) => ({
   // Sidebar actions
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
+
+  // Gemini API Key actions
+  setGeminiApiKey: (key) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vedaai_gemini_key', key);
+    }
+    set({ geminiApiKey: key });
+  },
 }));

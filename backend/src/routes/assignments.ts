@@ -68,8 +68,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     await assignment.save();
 
+    const customApiKey = req.headers['x-gemini-api-key'] as string || req.body.apiKey;
     // Add to generation queue
-    const jobId = await addGenerationJob(assignment._id.toString());
+    const jobId = await addGenerationJob(assignment._id.toString(), customApiKey);
 
     res.status(201).json({
       success: true,
@@ -132,8 +133,9 @@ router.post('/:id/regenerate', async (req: Request, res: Response): Promise<void
     assignment.errorMessage = undefined;
     await assignment.save();
 
+    const customApiKey = req.headers['x-gemini-api-key'] as string || req.body.apiKey;
     // Re-queue
-    const jobId = await addGenerationJob(assignment._id.toString());
+    const jobId = await addGenerationJob(assignment._id.toString(), customApiKey);
 
     res.json({
       success: true,

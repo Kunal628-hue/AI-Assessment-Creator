@@ -80,10 +80,14 @@ export default function Sidebar() {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="sidebar-link" style={{ opacity: 0.6 }}>
+          <Link
+            href="/settings"
+            className={`sidebar-link ${pathname === '/settings' ? 'active' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
             <Settings size={20} />
             Settings
-          </button>
+          </Link>
           <div style={{
             padding: '12px 16px',
             fontSize: 11,

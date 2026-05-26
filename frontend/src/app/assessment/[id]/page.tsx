@@ -25,12 +25,14 @@ export default function AssessmentViewPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'paper' | 'answers'>('paper');
 
   const {
     generationStatus,
     generationProgress,
     setGenerationStatus,
     setGenerationProgress,
+    geminiApiKey,
   } = useAssignmentStore();
 
   const { subscribe } = useWebSocket();
@@ -83,6 +85,8 @@ export default function AssessmentViewPage({ params }: { params: Promise<{ id: s
     try {
       const res = await fetch(`${API_URL}/assignments/${id}/regenerate`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: geminiApiKey || undefined }),
       });
       const data = await res.json();
       if (data.success) {
@@ -202,6 +206,48 @@ export default function AssessmentViewPage({ params }: { params: Promise<{ id: s
           </div>
         )}
 
+        {/* Tab Switcher */}
+        {paper && (
+          <div style={{
+            display: 'flex',
+            background: 'var(--bg-glass)',
+            border: '1px solid var(--border-color)',
+            padding: 4,
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 20,
+            maxWidth: 320,
+          }}>
+            <button
+              onClick={() => setActiveTab('paper')}
+              className="btn btn-sm"
+              style={{
+                flex: 1,
+                background: activeTab === 'paper' ? 'var(--accent-gradient)' : 'transparent',
+                color: activeTab === 'paper' ? '#fff' : 'var(--text-secondary)',
+                borderRadius: 'calc(var(--radius-md) - 2px)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Question Paper
+            </button>
+            <button
+              onClick={() => setActiveTab('answers')}
+              className="btn btn-sm"
+              style={{
+                flex: 1,
+                background: activeTab === 'answers' ? 'var(--accent-gradient)' : 'transparent',
+                color: activeTab === 'answers' ? '#fff' : 'var(--text-secondary)',
+                borderRadius: 'calc(var(--radius-md) - 2px)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Answer Key
+            </button>
+          </div>
+        )}
+
         {/* Question Paper */}
         {paper && (
           <div className="paper-wrapper animate-scale-in">
@@ -292,6 +338,26 @@ export default function AssessmentViewPage({ params }: { params: Promise<{ id: s
                         </span>
                         <span className="paper-question-marks">[{question.marks} Mark{question.marks > 1 ? 's' : ''}]</span>
                       </div>
+
+                      {activeTab === 'answers' && question.correctAnswer && (
+                        <div style={{
+                          marginTop: 12,
+                          padding: '10px 14px',
+                          background: '#f4fbf7',
+                          borderLeft: '3px solid #10b981',
+                          borderRadius: '0 4px 4px 0',
+                          fontSize: 13,
+                          color: '#14532d',
+                          textAlign: 'left',
+                          fontFamily: 'var(--font-family)',
+                        }}>
+                          <div style={{ fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <CheckCircle2 size={14} style={{ color: '#10b981' }} />
+                            Correct Answer / Grading Rubric:
+                          </div>
+                          <div>{question.correctAnswer}</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

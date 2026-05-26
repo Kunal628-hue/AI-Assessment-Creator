@@ -62,8 +62,9 @@ IMPORTANT OUTPUT RULES:
 1. Return ONLY a valid JSON object (no markdown, no code fences, no explanation).
 2. Distribute difficulty across questions according to the percentages above.
 3. For MCQ questions, provide exactly 4 options labeled A, B, C, D.
-4. Each question must be unique, clear, and grade-appropriate.
-5. Questions should test different cognitive levels (recall, understanding, application, analysis).
+4. Each question must include a 'correctAnswer' field. For MCQs, this must be the exact matching option string (e.g. "A) Option 1"). For other types, it should be a concise correct answer key or explanation.
+5. Each question must be unique, clear, and grade-appropriate.
+6. Questions should test different cognitive levels (recall, understanding, application, analysis).
 
 OUTPUT JSON SCHEMA:
 {
@@ -93,7 +94,8 @@ OUTPUT JSON SCHEMA:
           "type": "mcq",
           "difficulty": "easy",
           "marks": 1,
-          "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"]
+          "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
+          "correctAnswer": "A) Option 1"
         }
       ]
     }
@@ -148,8 +150,8 @@ function parseAIResponse(responseText: string): IGeneratedPaper {
 }
 
 // Generate question paper using Gemini AI
-export async function generateQuestionPaper(assignment: IAssignment): Promise<IGeneratedPaper> {
-  const apiKey = process.env.GEMINI_API_KEY;
+export async function generateQuestionPaper(assignment: IAssignment, customApiKey?: string): Promise<IGeneratedPaper> {
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
 
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
     console.log('⚠️  No Gemini API key configured. Using mock generation.');
@@ -209,12 +211,20 @@ function generateMockPaper(assignment: IAssignment): IGeneratedPaper {
       };
 
       if (qc.type === 'mcq') {
-        question.options = [
+        const options = [
           `A) ${getMockOption(assignment.subject, 0)}`,
           `B) ${getMockOption(assignment.subject, 1)}`,
           `C) ${getMockOption(assignment.subject, 2)}`,
           `D) ${getMockOption(assignment.subject, 3)}`,
         ];
+        question.options = options;
+        question.correctAnswer = options[0]; // Choose A as correct for mock
+      } else if (qc.type === 'true_false') {
+        question.correctAnswer = i % 2 === 0 ? 'True' : 'False';
+      } else if (qc.type === 'fill_in_blank') {
+        question.correctAnswer = 'Correct Term';
+      } else {
+        question.correctAnswer = `This is a sample grading key and model answer for the question above. Marks should be awarded based on clarity, structure, and factual correctness. [Key points: ${assignment.subject} principles, step-by-step logic, grade-appropriate terms]`;
       }
 
       questions.push(question);

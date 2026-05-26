@@ -26,7 +26,7 @@ export function initializeQueue(redisConnection: Redis): void {
   generationWorker = new Worker(
     'assessment-generation',
     async (job: Job) => {
-      const { assignmentId } = job.data;
+      const { assignmentId, apiKey } = job.data;
       console.log(`🔄 Processing job for assignment: ${assignmentId}`);
 
       try {
@@ -52,7 +52,7 @@ export function initializeQueue(redisConnection: Redis): void {
         await simulateProgress(assignmentId, 30, 'Analyzing requirements...');
         
         // Generate the question paper
-        const paper = await generateQuestionPaper(assignment);
+        const paper = await generateQuestionPaper(assignment, apiKey);
 
         await simulateProgress(assignmentId, 70, 'Structuring question paper...');
 
@@ -129,10 +129,10 @@ export function getQueue(): Queue {
   return generationQueue;
 }
 
-export async function addGenerationJob(assignmentId: string): Promise<string> {
+export async function addGenerationJob(assignmentId: string, apiKey?: string): Promise<string> {
   const job = await generationQueue.add(
     'generate-paper',
-    { assignmentId },
+    { assignmentId, apiKey },
     {
       jobId: `gen-${assignmentId}-${Date.now()}`,
     }

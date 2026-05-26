@@ -58,6 +58,7 @@ export default function CreateAssessmentPage() {
     resetForm,
     setGenerationStatus,
     setGenerationProgress,
+    geminiApiKey,
   } = useAssignmentStore();
 
   const { subscribe } = useWebSocket();
@@ -123,6 +124,7 @@ export default function CreateAssessmentPage() {
         difficultyDistribution: formData.difficultyDistribution,
         additionalInstructions: formData.additionalInstructions,
         uploadedContent: formData.uploadedContent || undefined,
+        apiKey: geminiApiKey || undefined,
       };
 
       const res = await fetch(`${API_URL}/assignments`, {
